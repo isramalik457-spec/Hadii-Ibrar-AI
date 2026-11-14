@@ -1,368 +1,323 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0b0e14" />
-  <meta name="description" content="Live stock & ETF prices with interactive charts — real market data, sign in with just a username to sync your watchlist." />
-  <title>Ticker — Live Stocks & ETFs</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2316c784'/%3E%3Cpath d='M20 65 L40 45 L55 58 L80 30' stroke='%230b0e14' stroke-width='9' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="css/styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HADII AI QUANT</title>
+<meta name="theme-color" content="#100b20">
+
+<style>
+:root {
+  --bg:#0b0815;
+  --panel:#171127;
+  --panel2:#211735;
+  --border:#34264b;
+  --text:#f5f0ff;
+  --muted:#a99bbd;
+  --purple:#9b65ff;
+  --green:#00d99a;
+  --red:#ff526c;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+}
+header{
+  padding:17px;
+  background:#130d20;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+.logo{font-size:18px;font-weight:bold;color:#c39aff}
+.logo span{color:white}
+.status{font-size:11px;color:#ffcc70}
+main{padding:14px;max-width:850px;margin:auto}
+h2{font-size:18px;margin:18px 0 12px}
+.muted{color:var(--muted);font-size:12px}
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:13px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.stat{
+  background:var(--panel2);
+  border-radius:10px;
+  padding:13px;
+}
+.stat small{color:var(--muted);font-size:11px}
+.stat strong{display:block;margin-top:8px;font-size:16px}
+.warning{
+  color:#ffd17a;
+  background:#382a16;
+  border:1px solid #715324;
+  padding:12px;
+  border-radius:10px;
+  font-size:12px;
+  line-height:1.5;
+}
+.tabs{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  padding:8px 0 13px;
+}
+.tabs button{
+  background:var(--panel2);
+  color:var(--muted);
+  border:1px solid var(--border);
+  border-radius:9px;
+  padding:10px 13px;
+  white-space:nowrap;
+}
+.tabs button.active{
+  background:var(--purple);
+  color:white;
+}
+button{cursor:pointer}
+.section{display:none}
+.section.active{display:block}
+.chart{
+  height:420px;
+  width:100%;
+  overflow:hidden;
+  border-radius:12px;
+}
+.chart iframe{width:100%;height:100%;border:0}
+.field{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+  gap:12px;
+}
+.field input{
+  width:90px;
+  background:#0d0917;
+  color:white;
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:8px;
+}
+.signal{
+  text-align:center;
+  padding:24px 10px;
+}
+.signal h3{color:var(--muted)}
+.green{color:var(--green)}
+.red{color:var(--red)}
+footer{
+  text-align:center;
+  padding:25px;
+  color:var(--muted);
+  font-size:11px;
+}
+</style>
 </head>
 
 <body>
 
-<!-- Login gate -->
-<div class="login" id="login" hidden>
-  <div class="login-card">
-    <div class="login-logo">📈</div>
-    <h1 class="login-title">Ticker</h1>
-    <p class="login-sub">Pick a username to load your watchlist on any device.</p>
-    <form class="login-form" id="loginForm" autocomplete="off">
-      <input id="loginInput" class="login-input" type="text" name="username"
-        placeholder="Username" maxlength="24" autocomplete="username"
-        autocapitalize="none" spellcheck="false" />
-      <button type="submit" class="login-btn" id="loginBtn">Continue</button>
-    </form>
-    <div class="login-hint" id="loginHint">No password — just a name to save your list under.</div>
+<header>
+  <div class="logo">HADII <span>AI QUANT</span></div>
+  <div class="status">● DATA CONNECTION NOT VERIFIED</div>
+</header>
+
+<main>
+
+<div class="tabs">
+  <button class="active" data-tab="home">Dashboard</button>
+  <button data-tab="market">Gold Market</button>
+  <button data-tab="signals">AI Signals</button>
+  <button data-tab="strategy">Strategy</button>
+  <button data-tab="history">History</button>
+</div>
+
+<section id="home" class="section active">
+  <h2>Trading Dashboard</h2>
+
+  <div class="grid">
+    <div class="stat">
+      <small>INSTRUMENT</small>
+      <strong>XAUUSD GOLD</strong>
+    </div>
+    <div class="stat">
+      <small>TIMEFRAMES</small>
+      <strong>H4 + M5</strong>
+    </div>
+    <div class="stat">
+      <small>LIVE PRICE</small>
+      <strong>NOT CONNECTED</strong>
+    </div>
+    <div class="stat">
+      <small>AI SIGNAL</small>
+      <strong>WAITING</strong>
+    </div>
   </div>
-</div>
 
-<div class="app" id="app" hidden>
-  <header class="header">
-    <div class="brand">
-      <div class="brand-icon">📈</div>
-      <span class="brand-name">Ticker</span>
-    </div>
-    <div class="status">
-      <span class="dot" id="liveDot"></span>
-      <span id="statusTxt" class="status-txt">Loading…</span>
-      <button class="icon-btn" id="refreshBtn" title="Refresh">↻</button>
-      <button class="user-chip" id="userChip" title="Account" hidden>
-        <span class="user-avatar" id="userAvatar">?</span>
-        <span class="user-name" id="userName">—</span>
-      </button>
-    </div>
-  </header>
-
-  <nav class="tabs">
-    <button class="tab active" data-view="watchlist">★ Watchlist</button>
-    <button class="tab" data-view="discover">🔍 Discover</button>
-  </nav>
-
-  <!-- Watchlist view -->
-  <section class="view" id="view-watchlist">
-    <div class="search-wrap">
-      <input id="searchInput" class="search-input" type="search"
-        placeholder="Search & add a stock or ETF — e.g. AAPL, Tesla, VOO"
-        autocomplete="off" spellcheck="false" />
-      <div id="searchResults" class="search-results" hidden></div>
-    </div>
-
-    <main class="content" id="watchlist">
-      <div class="center-msg" id="initLoader">
-        <div class="loader"></div>
-        <span>Fetching live prices…</span>
-      </div>
-    </main>
-  </section>
-
-  <!-- Discover view -->
-  <section class="view" id="view-discover" hidden>
-    <div class="discover">
-      <p class="discover-intro">Find new stocks &amp; ETFs across the whole market. Ask the AI, tap a quick pick, or open Filters.</p>
-
-      <div class="ai-box">
-        <div class="ai-head">
-          <span class="ai-title">✨ AI search</span>
-          <div class="ai-head-btns">
-            <button class="icon-btn ai-clear-btn" id="aiClearBtn" title="Clear conversation" hidden>🗑</button>
-            <button class="icon-btn ai-settings-btn" id="aiSettingsBtn" title="AI settings">⚙︎</button>
-          </div>
-        </div>
-        <div class="ai-log" id="aiLog"></div>
-        <div class="ai-examples" id="aiExamples">
-          <button class="ai-ex" type="button">Cheap US tech stocks up a lot this year</button>
-          <button class="ai-ex" type="button">Large dividend stocks yielding over 3%</button>
-          <button class="ai-ex" type="button">Today's biggest gainers under $20</button>
-          <button class="ai-ex" type="button">European value stocks with low P/E</button>
-        </div>
-        <form class="ai-form" id="aiForm" autocomplete="off">
-          <input id="aiInput" class="ai-input" type="text"
-            placeholder="Ask AI — e.g. cheap US tech stocks up big this year" />
-          <button class="ai-send" id="aiSend" type="submit" title="Send">➤</button>
-        </form>
-        <div class="ai-hint" id="aiHint"></div>
-      </div>
-
-      <div class="preset-row" id="presetRow">
-        <button class="preset" data-preset="gainers">📈 Top gainers</button>
-        <button class="preset" data-preset="losers">📉 Biggest drops</button>
-        <button class="preset" data-preset="active">🔥 Most active</button>
-        <button class="preset" data-preset="large">💎 Large caps</button>
-        <button class="preset" data-preset="yearup">🚀 Up 20%+ (1Y)</button>
-        <button class="preset" data-preset="yeardown">🩸 Down 20%+ (1Y)</button>
-      </div>
-
-      <details class="filters" id="filters">
-        <summary>⚙︎ Filters</summary>
-        <div class="filter-body">
-          <div class="filter-row">
-            <label>I'm looking for</label>
-            <div class="seg seg-type" id="segType">
-              <button class="active" data-type="stocks">Stocks</button>
-              <button data-type="etfs">ETFs</button>
-            </div>
-          </div>
-
-          <div class="filter-row col">
-            <label>Country / market <span class="hint">(pick any number)</span></label>
-            <div class="chip-group" id="regionGroup">
-              <button type="button" class="chip active" data-region="us">🇺🇸 United States</button>
-              <button type="button" class="chip" data-region="any">🌍 Any major market</button>
-              <button type="button" class="chip" data-region="gb">🇬🇧 United Kingdom</button>
-              <button type="button" class="chip" data-region="de">🇩🇪 Germany</button>
-              <button type="button" class="chip" data-region="fr">🇫🇷 France</button>
-              <button type="button" class="chip" data-region="ca">🇨🇦 Canada</button>
-              <button type="button" class="chip" data-region="jp">🇯🇵 Japan</button>
-              <button type="button" class="chip" data-region="cn">🇨🇳 China</button>
-              <button type="button" class="chip" data-region="hk">🇭🇰 Hong Kong</button>
-              <button type="button" class="chip" data-region="in">🇮🇳 India</button>
-              <button type="button" class="chip" data-region="au">🇦🇺 Australia</button>
-              <button type="button" class="chip" data-region="nl">🇳🇱 Netherlands</button>
-              <button type="button" class="chip" data-region="ch">🇨🇭 Switzerland</button>
-              <button type="button" class="chip" data-region="br">🇧🇷 Brazil</button>
-              <button type="button" class="chip" data-region="kr">🇰🇷 South Korea</button>
-              <button type="button" class="chip" data-region="es">🇪🇸 Spain</button>
-              <button type="button" class="chip" data-region="it">🇮🇹 Italy</button>
-              <button type="button" class="chip" data-region="se">🇸🇪 Sweden</button>
-            </div>
-          </div>
-
-          <div class="filter-row col" id="sectorRow">
-            <label>Sector <span class="hint">(pick any number)</span></label>
-            <div class="chip-group" id="sectorGroup">
-              <button type="button" class="chip" data-sector="Technology">Technology</button>
-              <button type="button" class="chip" data-sector="Healthcare">Healthcare</button>
-              <button type="button" class="chip" data-sector="Financial Services">Financial Services</button>
-              <button type="button" class="chip" data-sector="Consumer Cyclical">Consumer Cyclical</button>
-              <button type="button" class="chip" data-sector="Consumer Defensive">Consumer Defensive</button>
-              <button type="button" class="chip" data-sector="Communication Services">Communication Services</button>
-              <button type="button" class="chip" data-sector="Industrials">Industrials</button>
-              <button type="button" class="chip" data-sector="Energy">Energy</button>
-              <button type="button" class="chip" data-sector="Basic Materials">Basic Materials</button>
-              <button type="button" class="chip" data-sector="Real Estate">Real Estate</button>
-              <button type="button" class="chip" data-sector="Utilities">Utilities</button>
-            </div>
-          </div>
-
-          <div class="filter-row col">
-            <label>Company size <span class="hint">(pick any number)</span></label>
-            <div class="chip-group" id="capGroup">
-              <button type="button" class="chip" data-cap="mega">Mega cap (over $200B)</button>
-              <button type="button" class="chip" data-cap="large">Large cap ($10B–$200B)</button>
-              <button type="button" class="chip" data-cap="mid">Mid cap ($2B–$10B)</button>
-              <button type="button" class="chip" data-cap="small">Small cap ($300M–$2B)</button>
-              <button type="button" class="chip" data-cap="micro">Micro cap (under $300M)</button>
-            </div>
-          </div>
-
-          <div class="filter-row">
-            <label>Price ($)</label>
-            <div class="range-inputs">
-              <input id="fPriceMin" type="number" inputmode="decimal" placeholder="min" />
-              <span>to</span>
-              <input id="fPriceMax" type="number" inputmode="decimal" placeholder="max" />
-            </div>
-          </div>
-
-          <div class="filter-row">
-            <label>Change today (%)</label>
-            <div class="range-inputs">
-              <input id="fDayMin" type="number" inputmode="decimal" placeholder="min" />
-              <span>to</span>
-              <input id="fDayMax" type="number" inputmode="decimal" placeholder="max" />
-            </div>
-          </div>
-
-          <div class="filter-row">
-            <label>Change over 1 year (%)</label>
-            <div class="range-inputs">
-              <input id="fYearMin" type="number" inputmode="decimal" placeholder="min" />
-              <span>to</span>
-              <input id="fYearMax" type="number" inputmode="decimal" placeholder="max" />
-            </div>
-          </div>
-
-          <div class="filter-row" id="betaRow">
-            <label>Beta (volatility)</label>
-            <div class="range-inputs">
-              <input id="fBetaMin" type="number" inputmode="decimal" step="0.1" placeholder="min" />
-              <span>to</span>
-              <input id="fBetaMax" type="number" inputmode="decimal" step="0.1" placeholder="max" />
-            </div>
-          </div>
-
-          <div class="filter-row" id="peRow">
-            <label for="fPeMax">Max P/E ratio</label>
-            <div class="range-inputs">
-              <input id="fPeMax" type="number" inputmode="decimal" placeholder="e.g. 20" />
-            </div>
-          </div>
-
-          <div class="filter-row" id="pbRow">
-            <label for="fPbMax">Max Price/Book ratio</label>
-            <div class="range-inputs">
-              <input id="fPbMax" type="number" inputmode="decimal" placeholder="e.g. 3" />
-            </div>
-          </div>
-
-          <div class="filter-row" id="roeRow">
-            <label for="fRoeMin">Min return on equity (%)</label>
-            <div class="range-inputs">
-              <input id="fRoeMin" type="number" inputmode="decimal" placeholder="e.g. 15" />
-            </div>
-          </div>
-
-          <div class="filter-row" id="epsgRow">
-            <label for="fEpsgMin">Min EPS growth (%)</label>
-            <div class="range-inputs">
-              <input id="fEpsgMin" type="number" inputmode="decimal" placeholder="e.g. 10" />
-            </div>
-          </div>
-
-          <div class="filter-row" id="deRow">
-            <label for="fDeMax">Max debt/equity</label>
-            <div class="range-inputs">
-              <input id="fDeMax" type="number" inputmode="decimal" placeholder="e.g. 100" />
-            </div>
-          </div>
-
-          <div class="filter-row">
-            <label for="fDivMin">Min dividend yield (%)</label>
-            <div class="range-inputs">
-              <input id="fDivMin" type="number" inputmode="decimal" placeholder="e.g. 3" />
-            </div>
-          </div>
-
-          <div class="filter-row">
-            <label for="fVol">Min. daily volume</label>
-            <div class="range-inputs">
-              <input id="fVol" type="number" inputmode="numeric" placeholder="e.g. 1000000" />
-            </div>
-          </div>
-
-          <div class="filter-row">
-            <label for="fAvgVol">Min. avg. volume (3-month)</label>
-            <div class="range-inputs">
-              <input id="fAvgVol" type="number" inputmode="numeric" placeholder="e.g. 500000" />
-            </div>
-          </div>
-
-          <div class="filter-row">
-            <label for="fSort">Sort by</label>
-            <select id="fSort">
-              <option value="marketcap">Largest companies</option>
-              <option value="gainers">Biggest gainers today</option>
-              <option value="losers">Biggest losers today</option>
-              <option value="volume">Most active</option>
-              <option value="price">Highest price</option>
-              <option value="yeargainers">Best 1-year performers</option>
-              <option value="yearlosers">Worst 1-year performers</option>
-              <option value="lowpe">Lowest P/E (value)</option>
-              <option value="dividend">Highest dividend yield</option>
-            </select>
-          </div>
-
-          <div class="filter-actions">
-            <button class="btn-ghost" id="resetFilters" type="button">Reset</button>
-            <button class="btn-primary" id="applyFilters" type="button">Apply filters</button>
-          </div>
-        </div>
-      </details>
-
-      <div class="discover-status" id="discoverStatus"></div>
-      <div class="curation-bar" id="curationBar" hidden>
-        <span id="curationText"></span>
-        <button class="curation-clear" id="clearCuration" type="button">Show all</button>
-      </div>
-      <div class="content" id="discoverResults"></div>
-      <button class="load-more" id="loadMore" type="button" hidden>Load more</button>
-    </div>
-  </section>
-
-  <footer class="footer">
-    Data via Yahoo Finance · prices may be delayed · not investment advice
-  </footer>
-</div>
-
-<!-- Account menu -->
-<div class="overlay account-overlay" id="accountOverlay" hidden>
-  <div class="account-sheet">
-    <div class="account-avatar" id="accountAvatar">?</div>
-    <div class="account-user" id="accountUser">—</div>
-    <div class="account-sync" id="accountSync">—</div>
-    <button class="account-logout" id="logoutBtn">Log out</button>
+  <h2>Market Connection</h2>
+  <div class="warning">
+    LIVE PRICE NOT CONNECTED. Abhi koi verified XAUUSD candle feed
+    available nahi hai. Is liye app koi fake price ya trading signal
+    generate nahi karegi.
   </div>
-</div>
 
-<!-- AI settings -->
-<div class="overlay account-overlay" id="aiSettings" hidden>
-  <div class="account-sheet ai-settings-sheet">
-    <div class="account-user">✨ AI search settings</div>
-    <p class="ai-settings-note">
-      Powered by Google Gemini. Get a free API key at
-      <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.
-      It is stored only in your browser.
+  <h2>Strategy Overview</h2>
+  <div class="card">
+    <div class="field"><span>Higher timeframe</span><b>H4</b></div>
+    <div class="field"><span>Entry timeframe</span><b>M5</b></div>
+    <div class="field"><span>Maximum SL</span><b>$12.00</b></div>
+    <div class="field"><span>Minimum Risk Reward</span><b>1:2</b></div>
+    <div class="field"><span>Trading instrument</span><b>XAUUSD</b></div>
+  </div>
+</section>
+
+<section id="market" class="section">
+  <h2>Live Gold Market</h2>
+  <div class="warning">
+    TradingView chart embedded below. Chart display hona live data
+    API connection ya signal engine ka proof nahi hai.
+  </div>
+  <div class="card">
+    <div class="chart">
+      <iframe
+        title="XAUUSD TradingView Chart"
+        src="https://www.tradingview.com/widgetembed/?frameElementId=tv_chart&symbol=OANDA%3AXAUUSD&interval=240&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=120d20&theme=dark&style=1&timezone=Asia%2FKarachi&withdateranges=1&hideideas=1&studies="
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+  <p class="muted">Chart source: TradingView. Data availability and delay depend on the provider.</p>
+</section>
+
+<section id="signals" class="section">
+  <h2>AI Trading Signals</h2>
+  <div class="card signal">
+    <h3>NO VERIFIED SIGNAL</h3>
+    <p class="muted">
+      Valid H4 and M5 candle data connect hone ke baad
+      strategy conditions evaluate hongi.
     </p>
-    <input id="aiKeyInput" class="login-input" type="password" placeholder="Gemini API key"
-      autocomplete="off" autocapitalize="none" spellcheck="false" />
-    <label class="ai-settings-label" for="aiModelSelect">Model</label>
-    <select id="aiModelSelect" class="ai-model-select"></select>
-    <div class="ai-settings-status" id="aiSettingsStatus"></div>
-    <div class="ai-settings-actions">
-      <button class="btn-ghost" id="aiCloseSettings" type="button">Close</button>
-      <button class="btn-primary" id="aiSaveSettings" type="button">Save &amp; load models</button>
+    <div class="warning">
+      No trade. Do not enter a BUY or SELL based on this placeholder.
     </div>
   </div>
-</div>
 
-<!-- Detail overlay -->
-<div class="overlay" id="overlay" hidden>
-  <div class="sheet">
-    <div class="sheet-head">
-      <button class="icon-btn back-btn" id="backBtn" title="Close">‹</button>
-      <div class="sheet-title">
-        <div class="sheet-symbol" id="dSymbol">—</div>
-        <div class="sheet-name" id="dName">—</div>
-      </div>
-      <button class="icon-btn" id="removeBtn" title="Remove from list">🗑</button>
-    </div>
-
-    <div class="sheet-price">
-      <span class="big-price" id="dPrice">—</span>
-      <span class="big-change" id="dChange">—</span>
-    </div>
-
-    <div class="range-tabs" id="rangeTabs">
-      <button data-range="5d"  data-interval="15m">1W</button>
-      <button data-range="1mo" data-interval="1d" class="active">1M</button>
-      <button data-range="6mo" data-interval="1d">6M</button>
-      <button data-range="1y"  data-interval="1d">1Y</button>
-      <button data-range="5y"  data-interval="1wk">5Y</button>
-    </div>
-
-    <div class="chart-wrap">
-      <div id="chart"></div>
-      <div class="chart-loader" id="chartLoader" hidden><div class="loader"></div></div>
-    </div>
-
-    <div class="stats-grid" id="statsGrid"></div>
+  <h2>Signal Requirements</h2>
+  <div class="card">
+    <div class="field"><span>H4 trend and levels</span><b>Required</b></div>
+    <div class="field"><span>M5 confirmation</span><b>Required</b></div>
+    <div class="field"><span>Stop loss check</span><b>Maximum $12</b></div>
+    <div class="field"><span>Risk/reward check</span><b>Minimum 1:2</b></div>
   </div>
-</div>
+</section>
 
-<script src="js/app.js"></script>
+<section id="strategy" class="section">
+  <h2>Strategy Settings</h2>
+
+  <div class="card">
+    <h3>H4 + M5 Strategy</h3>
+    <div class="field"><span>H4 trend analysis</span><b>ON</b></div>
+    <div class="field"><span>Order Blocks</span><b>ON</b></div>
+    <div class="field"><span>Fair Value Gaps</span><b>ON</b></div>
+    <div class="field"><span>Liquidity sweep</span><b>ON</b></div>
+    <div class="field"><span>Double / Triple Top</span><b>ON</b></div>
+    <div class="field"><span>Double / Triple Bottom</span><b>ON</b></div>
+    <div class="field"><span>Engulfing candle</span><b>ON</b></div>
+    <div class="field"><span>Pin bar</span><b>ON</b></div>
+    <div class="field"><span>Rejection candle</span><b>ON</b></div>
+  </div>
+
+  <div class="card">
+    <h3>Risk Management</h3>
+    <div class="field">
+      <span>Maximum SL distance ($)</span>
+      <input id="maxSL" type="number" value="12" min="0.01" max="12" step="0.01">
+    </div>
+    <div class="field">
+      <span>Minimum Risk Reward</span>
+      <b>1:2</b>
+    </div>
+    <button id="saveSettings"
+      style="background:#9b65ff;color:white;border:0;border-radius:8px;padding:11px 16px">
+      Save Settings
+    </button>
+    <p id="saveMessage" class="muted"></p>
+  </div>
+</section>
+
+<section id="history" class="section">
+  <h2>Trade History</h2>
+  <div class="card">
+    <p class="muted">
+      Abhi koi verified AI trade record nahi hai.
+      Signals activate hone ke baad history yahan show hogi.
+    </p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  HADII AI QUANT · XAUUSD Trading System<br>
+  Trading involves risk. No guaranteed profits.
+</footer>
+
+<script>
+"use strict";
+
+const tabs = document.querySelectorAll("[data-tab]");
+const sections = document.querySelectorAll(".section");
+
+tabs.forEach(button => {
+  button.addEventListener("click", () => {
+    tabs.forEach(item => item.classList.remove("active"));
+    sections.forEach(item => item.classList.remove("active"));
+
+    button.classList.add("active");
+    document.getElementById(button.dataset.tab).classList.add("active");
+  });
+});
+
+const maxSL = document.getElementById("maxSL");
+const saveMessage = document.getElementById("saveMessage");
+
+try {
+  const saved = localStorage.getItem("hadii.maxSL");
+  if (saved) maxSL.value = saved;
+} catch (error) {}
+
+document.getElementById("saveSettings").addEventListener("click", () => {
+  const value = Number(maxSL.value);
+
+  if (!Number.isFinite(value) || value <= 0 || value > 12) {
+    saveMessage.textContent = "Maximum SL 12.00 se zyada nahi ho sakta.";
+    return;
+  }
+
+  try {
+    localStorage.setItem("hadii.maxSL", String(value));
+    saveMessage.textContent = "Settings saved on this device.";
+  } catch (error) {
+    saveMessage.textContent = "Settings could not be saved.";
+  }
+});
+</script>
+
 </body>
 </html>
