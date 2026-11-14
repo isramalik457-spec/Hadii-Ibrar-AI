@@ -1,4 +1,6 @@
 
+import { generateSignals } from "../lib/strategy.js";
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({
@@ -28,7 +30,6 @@ export default async function handler(req, res) {
     ]);
 
     const now = Date.now();
-
     const quoteAge = Number(quote.quoteAgeSeconds);
 
     const marketOpen =
@@ -41,55 +42,45 @@ export default async function handler(req, res) {
       quoteAge <= 180;
 
     const h4Bars = Array.isArray(h4Data.bars)
-      ? h4Data.bars
-      : [];
+      ? h4Data.bars : [];
 
     const m5Bars = Array.isArray(m5Data.bars)
-      ? m5Data.bars
-      : [];
+      ? m5Data.bars : [];
 
     function candleAgeMinutes(bars) {
-      if (!bars.length || !bars[0].openTime) {
-        return Infinity;
-      }
+      if (!bars.length || !bars[0].openTime) return Infinity;
 
-      const candleTime = Date.parse(bars[0].openTime);
+      const time = Date.parse(bars[0].openTime);
+      if (!Number.isFinite(time)) return Infinity;
 
-      if (!Number.isFinite(candleTime)) {
-        return Infinity;
-      }
-
-      return (now - candleTime) / 60000;
+      return (now - time) / 60000;
     }
 
     const h4Age = candleAgeMinutes(h4Bars);
     const m5Age = candleAgeMinutes(m5Bars);
 
     const candlesFresh =
-      h4Age >= -5 &&
-      h4Age <= 480 &&
-      m5Age >= -2 &&
-      m5Age <= 10;
+      h4Age >= -5 && h4Age <= 480 &&
+      m5Age >= -2 && m5Age <= 10;
 
     const canGenerateSignals =
       marketOpen &&
       quoteFresh &&
       candlesFresh &&
-      h4Bars.length > 0 &&
-      m5Bars.length > 0;
+      h4Bars.length >= 3 &&
+      m5Bars.length >= 3;
+
+    // Strategy runs only when data is valid and live.
+    const strategy = canGenerateSignals
+      ? generateSignals(h4Bars, m5Bars)
+      : { signals: [], message: "Signals blocked: market data is not live." };
 
     return res.status(200).json({
       success: true,
-
       symbol: "XAUUSD",
       source: quote.source || "BiQuote",
-
       marketStatus: marketOpen ? "OPEN" : "CLOSED",
-
-      dataStatus: canGenerateSignals
-        ? "LIVE"
-        : "NOT LIVE",
-
+      dataStatus: canGenerateSignals ? "LIVE" : "NOT LIVE",
       canGenerateSignals,
 
       quote: {
@@ -107,7 +98,6 @@ export default async function handler(req, res) {
           candleAgeMinutes: h4Age,
           candles: h4Bars
         },
-
         M5: {
           interval: "5m",
           candleAgeMinutes: m5Age,
@@ -115,9 +105,7 @@ export default async function handler(req, res) {
         }
       },
 
-      message: canGenerateSignals
-        ? "Fresh market data received. Strategy engine is not connected yet."
-        : "Market data is closed, stale or incomplete. Signals are blocked.",
+      strategy,
 
       checkedAt: new Date(now).toISOString()
     });
@@ -127,6 +115,7 @@ export default async function handler(req, res) {
       success: false,
       dataStatus: "CONNECTION ERROR",
       canGenerateSignals: false,
+      strategy: { signals: [] },
       message: error.message
     });
   }
