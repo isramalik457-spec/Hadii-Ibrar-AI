@@ -4,320 +4,385 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090713">
 <title>HADII AI QUANT</title>
-<meta name="theme-color" content="#100b20">
 
 <style>
-:root {
-  --bg:#0b0815;
-  --panel:#171127;
-  --panel2:#211735;
-  --border:#34264b;
-  --text:#f5f0ff;
-  --muted:#a99bbd;
-  --purple:#9b65ff;
-  --green:#00d99a;
-  --red:#ff526c;
-}
 *{box-sizing:border-box}
 body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,sans-serif;
+  margin:0;background:#090713;color:#f5f1ff;
+  font-family:Arial,sans-serif;padding:18px;
 }
-header{
-  padding:17px;
-  background:#130d20;
-  border-bottom:1px solid var(--border);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  position:sticky;
-  top:0;
-  z-index:5;
+.container{max-width:900px;margin:auto}
+header{padding:15px 0 20px}
+h1{font-size:25px;margin:0;color:#d6b8ff}
+.sub{color:#aaa1bd;font-size:12px;margin-top:7px}
+.status{
+  display:inline-block;padding:7px 11px;border-radius:20px;
+  font-size:11px;background:#302344;color:#e2caff;
+  margin-top:12px
 }
-.logo{font-size:18px;font-weight:bold;color:#c39aff}
-.logo span{color:white}
-.status{font-size:11px;color:#ffcc70}
-main{padding:14px;max-width:850px;margin:auto}
-h2{font-size:18px;margin:18px 0 12px}
-.muted{color:var(--muted);font-size:12px}
-.card{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:15px;
-  margin-bottom:13px;
+nav{display:flex;gap:8px;overflow-x:auto;margin:15px 0}
+nav button{
+  background:#191328;color:#c9bddc;border:1px solid #34264b;
+  padding:11px 14px;border-radius:9px;white-space:nowrap
 }
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
+nav button.active{background:#6936a4;color:white}
+.panel{
+  background:#151020;border:1px solid #302442;
+  border-radius:14px;padding:17px;margin-bottom:14px
 }
-.stat{
-  background:var(--panel2);
-  border-radius:10px;
-  padding:13px;
+h2{font-size:17px;margin:0 0 15px}
+h3{font-size:14px;color:#cbb5ec}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.metric{
+  background:#20192d;border-radius:10px;padding:14px;
+  min-width:0
 }
-.stat small{color:var(--muted);font-size:11px}
-.stat strong{display:block;margin-top:8px;font-size:16px}
-.warning{
-  color:#ffd17a;
-  background:#382a16;
-  border:1px solid #715324;
-  padding:12px;
-  border-radius:10px;
-  font-size:12px;
-  line-height:1.5;
-}
-.tabs{
-  display:flex;
-  gap:7px;
-  overflow-x:auto;
-  padding:8px 0 13px;
-}
-.tabs button{
-  background:var(--panel2);
-  color:var(--muted);
-  border:1px solid var(--border);
-  border-radius:9px;
-  padding:10px 13px;
-  white-space:nowrap;
-}
-.tabs button.active{
-  background:var(--purple);
-  color:white;
-}
-button{cursor:pointer}
-.section{display:none}
-.section.active{display:block}
-.chart{
-  height:420px;
-  width:100%;
-  overflow:hidden;
-  border-radius:12px;
-}
-.chart iframe{width:100%;height:100%;border:0}
-.field{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 0;
-  border-bottom:1px solid var(--border);
-  gap:12px;
-}
-.field input{
-  width:90px;
-  background:#0d0917;
-  color:white;
-  border:1px solid var(--border);
-  border-radius:7px;
-  padding:8px;
-}
+.metric small{display:block;color:#a99bbd;font-size:11px}
+.metric strong{display:block;font-size:19px;margin-top:8px;overflow-wrap:anywhere}
+.green{color:#42dc91}
+.red{color:#ff657a}
+.yellow{color:#ffce70}
+.muted{color:#aaa1bd;font-size:12px;line-height:1.6}
+.hidden{display:none}
 .signal{
-  text-align:center;
-  padding:24px 10px;
+  border:1px solid #453456;padding:14px;
+  border-radius:10px;margin:10px 0;background:#20192d
 }
-.signal h3{color:var(--muted)}
-.green{color:var(--green)}
-.red{color:var(--red)}
-footer{
-  text-align:center;
-  padding:25px;
-  color:var(--muted);
-  font-size:11px;
+.signal.buy{border-left:4px solid #42dc91}
+.signal.sell{border-left:4px solid #ff657a}
+.signal p{font-size:12px;color:#c5bad5}
+.row{display:flex;justify-content:space-between;gap:10px;margin:9px 0;font-size:13px}
+hr{border:0;border-top:1px solid #342941;margin:14px 0}
+button{cursor:pointer}
+footer{text-align:center;color:#81758f;font-size:11px;padding:20px}
+@media(max-width:420px){
+ body{padding:12px}
+ .grid{gap:8px}
+ .metric{padding:11px}
+ .metric strong{font-size:16px}
 }
 </style>
 </head>
 
 <body>
+<div class="container">
 
 <header>
-  <div class="logo">HADII <span>AI QUANT</span></div>
-  <div class="status">● DATA CONNECTION NOT VERIFIED</div>
+  <h1>HADII AI QUANT</h1>
+  <div class="sub">XAUUSD GOLD · H4 + M5 TRADING SYSTEM</div>
+  <div id="connection" class="status">CHECKING CONNECTION...</div>
 </header>
 
-<main>
+<nav>
+  <button class="active" onclick="showTab('dashboard',this)">Dashboard</button>
+  <button onclick="showTab('market',this)">Gold Market</button>
+  <button onclick="showTab('signals',this)">AI Signals</button>
+  <button onclick="showTab('strategy',this)">Strategy</button>
+  <button onclick="showTab('history',this)">History</button>
+</nav>
 
-<div class="tabs">
-  <button class="active" data-tab="home">Dashboard</button>
-  <button data-tab="market">Gold Market</button>
-  <button data-tab="signals">AI Signals</button>
-  <button data-tab="strategy">Strategy</button>
-  <button data-tab="history">History</button>
-</div>
-
-<section id="home" class="section active">
-  <h2>Trading Dashboard</h2>
-
-  <div class="grid">
-    <div class="stat">
-      <small>INSTRUMENT</small>
-      <strong>XAUUSD GOLD</strong>
-    </div>
-    <div class="stat">
-      <small>TIMEFRAMES</small>
-      <strong>H4 + M5</strong>
-    </div>
-    <div class="stat">
-      <small>LIVE PRICE</small>
-      <strong>NOT CONNECTED</strong>
-    </div>
-    <div class="stat">
-      <small>AI SIGNAL</small>
-      <strong>WAITING</strong>
+<section id="dashboard">
+  <div class="panel">
+    <h2>Trading Dashboard</h2>
+    <div class="grid">
+      <div class="metric">
+        <small>INSTRUMENT</small>
+        <strong>XAUUSD GOLD</strong>
+      </div>
+      <div class="metric">
+        <small>TIMEFRAMES</small>
+        <strong>H4 + M5</strong>
+      </div>
+      <div class="metric">
+        <small>MARKET STATUS</small>
+        <strong id="dashMarket" class="yellow">CHECKING</strong>
+      </div>
+      <div class="metric">
+        <small>AI SIGNAL</small>
+        <strong id="dashSignal">WAITING</strong>
+      </div>
     </div>
   </div>
 
-  <h2>Market Connection</h2>
-  <div class="warning">
-    LIVE PRICE NOT CONNECTED. Abhi koi verified XAUUSD candle feed
-    available nahi hai. Is liye app koi fake price ya trading signal
-    generate nahi karegi.
+  <div class="panel">
+    <h2>Gold Price</h2>
+    <div class="metric">
+      <small id="priceLabel">PRICE STATUS</small>
+      <strong id="mainPrice">--</strong>
+      <p class="muted" id="priceNote">Waiting for API data...</p>
+    </div>
+    <div class="grid" style="margin-top:10px">
+      <div class="metric">
+        <small>BID</small><strong id="bid">--</strong>
+      </div>
+      <div class="metric">
+        <small>ASK</small><strong id="ask">--</strong>
+      </div>
+    </div>
   </div>
 
-  <h2>Strategy Overview</h2>
-  <div class="card">
-    <div class="field"><span>Higher timeframe</span><b>H4</b></div>
-    <div class="field"><span>Entry timeframe</span><b>M5</b></div>
-    <div class="field"><span>Maximum SL</span><b>$12.00</b></div>
-    <div class="field"><span>Minimum Risk Reward</span><b>1:2</b></div>
-    <div class="field"><span>Trading instrument</span><b>XAUUSD</b></div>
+  <div class="panel">
+    <h2>Market Connection</h2>
+    <p id="connectionMessage" class="muted">Checking Gold API...</p>
+    <div class="row"><span>Data source</span><strong id="source">--</strong></div>
+    <div class="row"><span>Last quote</span><strong id="quoteTime">--</strong></div>
+    <div class="row"><span>Spread</span><strong id="spread">--</strong></div>
+    <div class="row"><span>Last checked</span><strong id="checkedAt">--</strong></div>
   </div>
 </section>
 
-<section id="market" class="section">
-  <h2>Live Gold Market</h2>
-  <div class="warning">
-    TradingView chart embedded below. Chart display hona live data
-    API connection ya signal engine ka proof nahi hai.
-  </div>
-  <div class="card">
-    <div class="chart">
-      <iframe
-        title="XAUUSD TradingView Chart"
-        src="https://www.tradingview.com/widgetembed/?frameElementId=tv_chart&symbol=OANDA%3AXAUUSD&interval=240&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=120d20&theme=dark&style=1&timezone=Asia%2FKarachi&withdateranges=1&hideideas=1&studies="
-        allowfullscreen>
-      </iframe>
+<section id="market" class="hidden">
+  <div class="panel">
+    <h2>Live Gold Market</h2>
+    <p class="muted">XAUUSD · MetaTrader 5 / API feed</p>
+    <div class="grid">
+      <div class="metric"><small>BID</small><strong id="marketBid">--</strong></div>
+      <div class="metric"><small>ASK</small><strong id="marketAsk">--</strong></div>
+      <div class="metric"><small>SPREAD</small><strong id="marketSpread">--</strong></div>
+      <div class="metric"><small>DATA STATUS</small><strong id="dataStatus">--</strong></div>
     </div>
+    <hr>
+    <div class="row"><span>H4 candles received</span><strong id="h4Count">--</strong></div>
+    <div class="row"><span>M5 candles received</span><strong id="m5Count">--</strong></div>
+    <div class="row"><span>H4 candle age</span><strong id="h4Age">--</strong></div>
+    <div class="row"><span>M5 candle age</span><strong id="m5Age">--</strong></div>
   </div>
-  <p class="muted">Chart source: TradingView. Data availability and delay depend on the provider.</p>
 </section>
 
-<section id="signals" class="section">
-  <h2>AI Trading Signals</h2>
-  <div class="card signal">
-    <h3>NO VERIFIED SIGNAL</h3>
-    <p class="muted">
-      Valid H4 and M5 candle data connect hone ke baad
-      strategy conditions evaluate hongi.
+<section id="signals" class="hidden">
+  <div class="panel">
+    <h2>AI Trading Signals</h2>
+    <p class="muted" id="signalMessage">
+      Waiting for verified market data.
     </p>
-    <div class="warning">
-      No trade. Do not enter a BUY or SELL based on this placeholder.
+    <div id="signalList">
+      <p class="muted">No confirmed signals available.</p>
     </div>
-  </div>
-
-  <h2>Signal Requirements</h2>
-  <div class="card">
-    <div class="field"><span>H4 trend and levels</span><b>Required</b></div>
-    <div class="field"><span>M5 confirmation</span><b>Required</b></div>
-    <div class="field"><span>Stop loss check</span><b>Maximum $12</b></div>
-    <div class="field"><span>Risk/reward check</span><b>Minimum 1:2</b></div>
   </div>
 </section>
 
-<section id="strategy" class="section">
-  <h2>Strategy Settings</h2>
-
-  <div class="card">
-    <h3>H4 + M5 Strategy</h3>
-    <div class="field"><span>H4 trend analysis</span><b>ON</b></div>
-    <div class="field"><span>Order Blocks</span><b>ON</b></div>
-    <div class="field"><span>Fair Value Gaps</span><b>ON</b></div>
-    <div class="field"><span>Liquidity sweep</span><b>ON</b></div>
-    <div class="field"><span>Double / Triple Top</span><b>ON</b></div>
-    <div class="field"><span>Double / Triple Bottom</span><b>ON</b></div>
-    <div class="field"><span>Engulfing candle</span><b>ON</b></div>
-    <div class="field"><span>Pin bar</span><b>ON</b></div>
-    <div class="field"><span>Rejection candle</span><b>ON</b></div>
-  </div>
-
-  <div class="card">
-    <h3>Risk Management</h3>
-    <div class="field">
-      <span>Maximum SL distance ($)</span>
-      <input id="maxSL" type="number" value="12" min="0.01" max="12" step="0.01">
-    </div>
-    <div class="field">
-      <span>Minimum Risk Reward</span>
-      <b>1:2</b>
-    </div>
-    <button id="saveSettings"
-      style="background:#9b65ff;color:white;border:0;border-radius:8px;padding:11px 16px">
-      Save Settings
-    </button>
-    <p id="saveMessage" class="muted"></p>
-  </div>
-</section>
-
-<section id="history" class="section">
-  <h2>Trade History</h2>
-  <div class="card">
+<section id="strategy" class="hidden">
+  <div class="panel">
+    <h2>Strategy Overview</h2>
+    <div class="row"><span>Higher timeframe</span><strong>H4</strong></div>
+    <div class="row"><span>Entry timeframe</span><strong>M5</strong></div>
+    <div class="row"><span>Maximum SL</span><strong>$12.00</strong></div>
+    <div class="row"><span>Minimum Risk Reward</span><strong>1:2</strong></div>
+    <div class="row"><span>Instrument</span><strong>XAUUSD</strong></div>
+    <hr>
+    <h3>Setup Conditions</h3>
     <p class="muted">
-      Abhi koi verified AI trade record nahi hai.
-      Signals activate hone ke baad history yahan show hogi.
+      H4 liquidity sweep · Double/Triple Top and Bottom ·
+      Order Block retest · FVG retest ·
+      Engulfing · Pin Bar · Rejection candles.
+    </p>
+    <p class="muted">
+      Signals require completed M5 candle confirmation
+      and valid live market data.
     </p>
   </div>
 </section>
 
-</main>
+<section id="history" class="hidden">
+  <div class="panel">
+    <h2>Trade History</h2>
+    <p class="muted">
+      No saved trade history yet. Signal history and trade
+      performance tracking will be added separately.
+    </p>
+  </div>
+</section>
 
 <footer>
   HADII AI QUANT · XAUUSD Trading System<br>
   Trading involves risk. No guaranteed profits.
 </footer>
 
+</div>
+
 <script>
-"use strict";
+const API_URL = "/api/gold";
 
-const tabs = document.querySelectorAll("[data-tab]");
-const sections = document.querySelectorAll(".section");
+function showTab(id, button) {
+  document.querySelectorAll("section").forEach(s =>
+    s.classList.add("hidden")
+  );
+  document.getElementById(id).classList.remove("hidden");
 
-tabs.forEach(button => {
-  button.addEventListener("click", () => {
-    tabs.forEach(item => item.classList.remove("active"));
-    sections.forEach(item => item.classList.remove("active"));
+  document.querySelectorAll("nav button").forEach(b =>
+    b.classList.remove("active")
+  );
+  button.classList.add("active");
+}
 
-    button.classList.add("active");
-    document.getElementById(button.dataset.tab).classList.add("active");
-  });
-});
+function setText(id, value) {
+  document.getElementById(id).textContent = value;
+}
 
-const maxSL = document.getElementById("maxSL");
-const saveMessage = document.getElementById("saveMessage");
+function number(value, digits = 3) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n.toFixed(digits) : "--";
+}
 
-try {
-  const saved = localStorage.getItem("hadii.maxSL");
-  if (saved) maxSL.value = saved;
-} catch (error) {}
+function age(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n.toFixed(1) + " minutes" : "--";
+}
 
-document.getElementById("saveSettings").addEventListener("click", () => {
-  const value = Number(maxSL.value);
+function date(value) {
+  if (!value) return "--";
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? "--" : d.toLocaleString();
+}
 
-  if (!Number.isFinite(value) || value <= 0 || value > 12) {
-    saveMessage.textContent = "Maximum SL 12.00 se zyada nahi ho sakta.";
+function renderSignals(data) {
+  const list = document.getElementById("signalList");
+  list.innerHTML = "";
+
+  const signals = Array.isArray(data) ? data : [];
+
+  if (!signals.length) {
+    list.innerHTML =
+      '<p class="muted">No confirmed signals. Waiting for the next valid setup.</p>';
     return;
   }
 
-  try {
-    localStorage.setItem("hadii.maxSL", String(value));
-    saveMessage.textContent = "Settings saved on this device.";
-  } catch (error) {
-    saveMessage.textContent = "Settings could not be saved.";
-  }
-});
-</script>
+  signals.forEach(signal => {
+    const direction = signal.direction === "BUY" ? "buy" : "sell";
+    const card = document.createElement("div");
+    card.className = "signal " + direction;
 
+    const title = document.createElement("h3");
+    title.textContent = signal.direction + " · " + signal.setup;
+    title.className = direction === "buy" ? "green" : "red";
+    card.appendChild(title);
+
+    const details = [
+      ["Entry", signal.entry],
+      ["Stop Loss", signal.sl],
+      ["Take Profit 1", signal.tp1],
+      ["Take Profit 2", signal.tp2 ?? "Not available"],
+      ["Risk distance", signal.riskDistance],
+      ["Reward/Risk", signal.rewardRisk]
+    ];
+
+    details.forEach(item => {
+      const row = document.createElement("div");
+      row.className = "row";
+      const label = document.createElement("span");
+      label.textContent = item[0];
+      const value = document.createElement("strong");
+      value.textContent = item[1] ?? "--";
+      row.append(label, value);
+      card.appendChild(row);
+    });
+
+    list.appendChild(card);
+  });
+}
+
+async function loadGoldData() {
+  try {
+    const response = await fetch(API_URL, { cache: "no-store" });
+
+    if (!response.ok) {
+      throw new Error("API returned HTTP " + response.status);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Gold API error");
+    }
+
+    const q = data.quote || {};
+    const t = data.timeframes || {};
+    const h4 = t.H4 || {};
+    const m5 = t.M5 || {};
+
+    const isLive =
+      data.canGenerateSignals === true &&
+      data.marketStatus === "OPEN" &&
+      data.dataStatus === "LIVE" &&
+      q.stale === false;
+
+    setText("connection", isLive
+      ? "● LIVE DATA VERIFIED"
+      : "● API CONNECTED · NOT LIVE");
+
+    setText("dashMarket", data.marketStatus || "UNKNOWN");
+    setText("dataStatus", data.dataStatus || "UNKNOWN");
+    setText("source", data.source || "Unknown");
+    setText("bid", number(q.bid));
+    setText("ask", number(q.ask));
+    setText("marketBid", number(q.bid));
+    setText("marketAsk", number(q.ask));
+    setText("spread", number(q.spread));
+    setText("marketSpread", number(q.spread));
+    setText("quoteTime", date(q.timestamp));
+    setText("checkedAt", date(data.checkedAt));
+
+    const midpoint = Number.isFinite(Number(q.bid)) &&
+      Number.isFinite(Number(q.ask))
+      ? (Number(q.bid) + Number(q.ask)) / 2
+      : null;
+
+    setText("mainPrice", midpoint === null
+      ? "--"
+      : number(midpoint));
+
+    setText("priceLabel", isLive
+      ? "LIVE GOLD PRICE"
+      : "LAST RECORDED PRICE · NOT LIVE");
+
+    setText("priceNote", isLive
+      ? "Verified live quote"
+      : "This is the last recorded quote, not a live price.");
+
+    setText("connectionMessage", isLive
+      ? "Live Gold data verified. Signal checks are enabled."
+      : "API responded, but market data is not verified as live. New signals are blocked.");
+
+    setText("h4Count", (h4.candles || []).length);
+    setText("m5Count", (m5.candles || []).length);
+    setText("h4Age", age(h4.candleAgeMinutes));
+    setText("m5Age", age(m5.candleAgeMinutes));
+
+    const signals = data.strategy && data.strategy.signals
+      ? data.strategy.signals
+      : [];
+
+    if (isLive) {
+      renderSignals(signals);
+      setText("dashSignal", signals.length
+        ? signals[0].direction
+        : "WAITING");
+      setText("signalMessage", data.strategy.message ||
+        "Checking completed M5 candles.");
+    } else {
+      renderSignals([]);
+      setText("dashSignal", "WAITING");
+      setText("signalMessage",
+        "Signals blocked: market closed or data is stale.");
+    }
+
+  } catch (error) {
+    setText("connection", "● CONNECTION ERROR");
+    setText("dashMarket", "UNKNOWN");
+    setText("dashSignal", "WAITING");
+    setText("mainPrice", "--");
+    setText("priceLabel", "PRICE NOT VERIFIED");
+    setText("priceNote", "No verified quote available.");
+    setText("connectionMessage", error.message);
+    setText("signalMessage", "Signals blocked: API connection error.");
+    renderSignals([]);
+  }
+}
+
+loadGoldData();
+setInterval(loadGoldData, 30000);
+</script>
 </body>
 </html>
