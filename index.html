@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,75 +5,53 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#090713">
 <title>HADII AI QUANT</title>
-
 <style>
 *{box-sizing:border-box}
-body{
-  margin:0;background:#090713;color:#f5f1ff;
-  font-family:Arial,sans-serif;padding:18px;
-}
+body{margin:0;background:#090713;color:#f5f1ff;font-family:Arial,sans-serif;padding:18px}
 .container{max-width:900px;margin:auto}
 header{padding:15px 0 20px}
 h1{font-size:25px;margin:0;color:#d6b8ff}
 .sub{color:#aaa1bd;font-size:12px;margin-top:7px}
-.status{
-  display:inline-block;padding:7px 11px;border-radius:20px;
-  font-size:11px;background:#302344;color:#e2caff;
-  margin-top:12px
-}
+.status{display:inline-block;padding:7px 11px;border-radius:20px;font-size:11px;background:#302344;color:#e2caff;margin-top:12px}
 nav{display:flex;gap:8px;overflow-x:auto;margin:15px 0}
-nav button{
-  background:#191328;color:#c9bddc;border:1px solid #34264b;
-  padding:11px 14px;border-radius:9px;white-space:nowrap
-}
+nav button{background:#191328;color:#c9bddc;border:1px solid #34264b;padding:11px 14px;border-radius:9px;white-space:nowrap}
 nav button.active{background:#6936a4;color:white}
-.panel{
-  background:#151020;border:1px solid #302442;
-  border-radius:14px;padding:17px;margin-bottom:14px
-}
+.panel{background:#151020;border:1px solid #302442;border-radius:14px;padding:17px;margin-bottom:14px}
 h2{font-size:17px;margin:0 0 15px}
 h3{font-size:14px;color:#cbb5ec}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.metric{
-  background:#20192d;border-radius:10px;padding:14px;
-  min-width:0
-}
+.metric{background:#20192d;border-radius:10px;padding:14px;min-width:0}
 .metric small{display:block;color:#a99bbd;font-size:11px}
 .metric strong{display:block;font-size:19px;margin-top:8px;overflow-wrap:anywhere}
-.green{color:#42dc91}
-.red{color:#ff657a}
-.yellow{color:#ffce70}
+.green{color:#42dc91}.red{color:#ff657a}.yellow{color:#ffce70}
 .muted{color:#aaa1bd;font-size:12px;line-height:1.6}
 .hidden{display:none}
-.signal{
-  border:1px solid #453456;padding:14px;
-  border-radius:10px;margin:10px 0;background:#20192d
-}
-.signal.buy{border-left:4px solid #42dc91}
-.signal.sell{border-left:4px solid #ff657a}
+.signal{border:1px solid #453456;padding:14px;border-radius:10px;margin:10px 0;background:#20192d}
+.signal.buy{border-left:4px solid #42dc91}.signal.sell{border-left:4px solid #ff657a}
 .signal p{font-size:12px;color:#c5bad5}
 .row{display:flex;justify-content:space-between;gap:10px;margin:9px 0;font-size:13px}
 hr{border:0;border-top:1px solid #342941;margin:14px 0}
 button{cursor:pointer}
 footer{text-align:center;color:#81758f;font-size:11px;padding:20px}
-@media(max-width:420px){
- body{padding:12px}
- .grid{gap:8px}
- .metric{padding:11px}
- .metric strong{font-size:16px}
-}
+.diag-card{background:#20192d;border:1px solid #3b2d4c;border-radius:10px;padding:13px;margin:10px 0}
+.diag-title{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.diag-title h3{margin:0}
+.diag-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}
+.diag-stat{background:#171222;border-radius:8px;padding:9px;min-width:0}
+.diag-stat small{display:block;color:#a99bbd;font-size:10px}
+.diag-stat strong{display:block;margin-top:5px;font-size:17px;overflow-wrap:anywhere}
+.reason-list{padding-left:18px;margin:8px 0 0;color:#c5bad5;font-size:12px;line-height:1.7}
+.diag-note{padding:10px;border-radius:8px;background:#191328;color:#aaa1bd;font-size:11px;line-height:1.5}
+@media(max-width:520px){body{padding:12px}.grid{gap:8px}.metric{padding:11px}.metric strong{font-size:16px}.diag-stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
-
 <body>
 <div class="container">
-
 <header>
   <h1>HADII AI QUANT</h1>
   <div class="sub">XAUUSD GOLD · H4 + M5 TRADING SYSTEM</div>
   <div id="connection" class="status">CHECKING CONNECTION...</div>
 </header>
-
 <nav>
   <button class="active" onclick="showTab('dashboard',this)">Dashboard</button>
   <button onclick="showTab('market',this)">Gold Market</button>
@@ -87,25 +64,12 @@ footer{text-align:center;color:#81758f;font-size:11px;padding:20px}
   <div class="panel">
     <h2>Trading Dashboard</h2>
     <div class="grid">
-      <div class="metric">
-        <small>INSTRUMENT</small>
-        <strong>XAUUSD GOLD</strong>
-      </div>
-      <div class="metric">
-        <small>TIMEFRAMES</small>
-        <strong>H4 + M5</strong>
-      </div>
-      <div class="metric">
-        <small>MARKET STATUS</small>
-        <strong id="dashMarket" class="yellow">CHECKING</strong>
-      </div>
-      <div class="metric">
-        <small>AI SIGNAL</small>
-        <strong id="dashSignal">WAITING</strong>
-      </div>
+      <div class="metric"><small>INSTRUMENT</small><strong>XAUUSD GOLD</strong></div>
+      <div class="metric"><small>TIMEFRAMES</small><strong>H4 + M5</strong></div>
+      <div class="metric"><small>MARKET STATUS</small><strong id="dashMarket" class="yellow">CHECKING</strong></div>
+      <div class="metric"><small>AI SIGNAL</small><strong id="dashSignal">WAITING</strong></div>
     </div>
   </div>
-
   <div class="panel">
     <h2>Gold Price</h2>
     <div class="metric">
@@ -114,15 +78,10 @@ footer{text-align:center;color:#81758f;font-size:11px;padding:20px}
       <p class="muted" id="priceNote">Waiting for API data...</p>
     </div>
     <div class="grid" style="margin-top:10px">
-      <div class="metric">
-        <small>BID</small><strong id="bid">--</strong>
-      </div>
-      <div class="metric">
-        <small>ASK</small><strong id="ask">--</strong>
-      </div>
+      <div class="metric"><small>BID</small><strong id="bid">--</strong></div>
+      <div class="metric"><small>ASK</small><strong id="ask">--</strong></div>
     </div>
   </div>
-
   <div class="panel">
     <h2>Market Connection</h2>
     <p id="connectionMessage" class="muted">Checking Gold API...</p>
@@ -154,12 +113,15 @@ footer{text-align:center;color:#81758f;font-size:11px;padding:20px}
 <section id="signals" class="hidden">
   <div class="panel">
     <h2>AI Trading Signals</h2>
-    <p class="muted" id="signalMessage">
-      Waiting for verified market data.
-    </p>
-    <div id="signalList">
-      <p class="muted">No confirmed signals available.</p>
-    </div>
+    <p class="muted" id="signalMessage">Waiting for verified market data.</p>
+    <div id="signalList"><p class="muted">No confirmed signals available.</p></div>
+  </div>
+  <div class="panel">
+    <h2>Strategy Diagnostics</h2>
+    <p class="muted" id="diagStatus">Waiting for strategy diagnostics...</p>
+    <div id="diagDataChecks" class="diag-note">Candle checks will appear here.</div>
+    <div id="diagStrategies"></div>
+    <p class="diag-note">Counts shown here come directly from the strategy API. A zero means no matching setup was found in the latest scan; it does not mean a trade should be forced.</p>
   </div>
 </section>
 
@@ -173,25 +135,15 @@ footer{text-align:center;color:#81758f;font-size:11px;padding:20px}
     <div class="row"><span>Instrument</span><strong>XAUUSD</strong></div>
     <hr>
     <h3>Setup Conditions</h3>
-    <p class="muted">
-      H4 liquidity sweep · Double/Triple Top and Bottom ·
-      Order Block retest · FVG retest ·
-      Engulfing · Pin Bar · Rejection candles.
-    </p>
-    <p class="muted">
-      Signals require completed M5 candle confirmation
-      and valid live market data.
-    </p>
+    <p class="muted">H4 liquidity sweep · Double/Triple Top and Bottom · Order Block retest · FVG retest · Engulfing · Pin Bar · Rejection candles.</p>
+    <p class="muted">Signals require completed M5 candle confirmation and valid live market data.</p>
   </div>
 </section>
 
 <section id="history" class="hidden">
   <div class="panel">
     <h2>Trade History</h2>
-    <p class="muted">
-      No saved trade history yet. Signal history and trade
-      performance tracking will be added separately.
-    </p>
+    <p class="muted">No saved trade history yet. Signal history and trade performance tracking will be added separately.</p>
   </div>
 </section>
 
@@ -199,38 +151,29 @@ footer{text-align:center;color:#81758f;font-size:11px;padding:20px}
   HADII AI QUANT · XAUUSD Trading System<br>
   Trading involves risk. No guaranteed profits.
 </footer>
-
 </div>
 
 <script>
 const API_URL = "/api/gold";
 
 function showTab(id, button) {
-  document.querySelectorAll("section").forEach(s =>
-    s.classList.add("hidden")
-  );
+  document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
-
-  document.querySelectorAll("nav button").forEach(b =>
-    b.classList.remove("active")
-  );
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
   button.classList.add("active");
 }
-
 function setText(id, value) {
-  document.getElementById(id).textContent = value;
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
 }
-
 function number(value, digits = 3) {
   const n = Number(value);
   return Number.isFinite(n) ? n.toFixed(digits) : "--";
 }
-
 function age(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n.toFixed(1) + " minutes" : "--";
 }
-
 function date(value) {
   if (!value) return "--";
   const d = new Date(value);
@@ -240,34 +183,24 @@ function date(value) {
 function renderSignals(data) {
   const list = document.getElementById("signalList");
   list.innerHTML = "";
-
   const signals = Array.isArray(data) ? data : [];
-
   if (!signals.length) {
-    list.innerHTML =
-      '<p class="muted">No confirmed signals. Waiting for the next valid setup.</p>';
+    list.innerHTML = '<p class="muted">No confirmed signals. Waiting for the next valid setup.</p>';
     return;
   }
-
   signals.forEach(signal => {
     const direction = signal.direction === "BUY" ? "buy" : "sell";
     const card = document.createElement("div");
     card.className = "signal " + direction;
-
     const title = document.createElement("h3");
     title.textContent = signal.direction + " · " + signal.setup;
     title.className = direction === "buy" ? "green" : "red";
     card.appendChild(title);
-
     const details = [
-      ["Entry", signal.entry],
-      ["Stop Loss", signal.sl],
-      ["Take Profit 1", signal.tp1],
-      ["Take Profit 2", signal.tp2 ?? "Not available"],
-      ["Risk distance", signal.riskDistance],
-      ["Reward/Risk", signal.rewardRisk]
+      ["Entry", signal.entry], ["Stop Loss", signal.sl],
+      ["Take Profit 1", signal.tp1], ["Take Profit 2", signal.tp2 ?? "Not available"],
+      ["Risk distance", signal.riskDistance], ["Reward/Risk", signal.rewardRisk]
     ];
-
     details.forEach(item => {
       const row = document.createElement("div");
       row.className = "row";
@@ -278,40 +211,109 @@ function renderSignals(data) {
       row.append(label, value);
       card.appendChild(row);
     });
-
     list.appendChild(card);
+  });
+}
+
+function renderDiagnostics(strategy, data) {
+  const container = document.getElementById("diagStrategies");
+  const checksBox = document.getElementById("diagDataChecks");
+  container.innerHTML = "";
+
+  if (!strategy || !strategy.diagnostics) {
+    setText("diagStatus", "Diagnostics are not available in this API response.");
+    checksBox.textContent = "No diagnostic data received.";
+    return;
+  }
+
+  setText("diagStatus", strategy.message || "Latest strategy scan completed.");
+  const checks = strategy.dataChecks || {};
+  checksBox.textContent =
+    "Completed H4 candles: " + (checks.completedH4Candles ?? "--") +
+    " · Completed M5 candles: " + (checks.completedM5Candles ?? "--") +
+    " · Latest completed M5: " + (checks.currentM5CandleTime || "--") +
+    " · Consecutive M5 candles: " + (checks.m5CandlesConsecutive === undefined ? "Not reported" : (checks.m5CandlesConsecutive ? "Yes" : "No"));
+
+  const labels = {
+    intraday: "INTRADAY",
+    scalping: "SCALPING",
+    liquiditySweep: "LIQUIDITY SWEEP"
+  };
+
+  Object.entries(labels).forEach(([key, label]) => {
+    const item = strategy.diagnostics[key];
+    if (!item) return;
+
+    const card = document.createElement("div");
+    card.className = "diag-card";
+
+    const heading = document.createElement("div");
+    heading.className = "diag-title";
+    const title = document.createElement("h3");
+    title.textContent = label;
+    const state = document.createElement("strong");
+    state.className = Number(item.signalsCreated) > 0 ? "green" : "yellow";
+    state.textContent = Number(item.signalsCreated) > 0 ? "SIGNAL CREATED" : "NO SIGNAL";
+    heading.append(title, state);
+    card.appendChild(heading);
+
+    const stats = document.createElement("div");
+    stats.className = "diag-stats";
+    [
+      ["Checks", item.checks],
+      ["Setups found", item.setupsFound],
+      ["Signals", item.signalsCreated],
+      ["Rejected", item.rejectedCount]
+    ].forEach(([name, value]) => {
+      const box = document.createElement("div");
+      box.className = "diag-stat";
+      const small = document.createElement("small");
+      small.textContent = name;
+      const strong = document.createElement("strong");
+      strong.textContent = value ?? 0;
+      box.append(small, strong);
+      stats.appendChild(box);
+    });
+    card.appendChild(stats);
+
+    const reasons = Array.isArray(item.reasons) ? item.reasons : [];
+    const reasonTitle = document.createElement("p");
+    reasonTitle.className = "muted";
+    reasonTitle.textContent = reasons.length ? "Latest checks / rejection reasons:" : "No rejection reasons reported.";
+    card.appendChild(reasonTitle);
+
+    if (reasons.length) {
+      const list = document.createElement("ul");
+      list.className = "reason-list";
+      reasons.forEach(reason => {
+        const li = document.createElement("li");
+        li.textContent = reason;
+        list.appendChild(li);
+      });
+      card.appendChild(list);
+    }
+    container.appendChild(card);
   });
 }
 
 async function loadGoldData() {
   try {
     const response = await fetch(API_URL, { cache: "no-store" });
-
-    if (!response.ok) {
-      throw new Error("API returned HTTP " + response.status);
-    }
-
+    if (!response.ok) throw new Error("API returned HTTP " + response.status);
     const data = await response.json();
-
-    if (!data.success) {
-      throw new Error(data.message || "Gold API error");
-    }
+    if (!data.success) throw new Error(data.message || "Gold API error");
 
     const q = data.quote || {};
     const t = data.timeframes || {};
     const h4 = t.H4 || {};
     const m5 = t.M5 || {};
-
     const isLive =
       data.canGenerateSignals === true &&
       data.marketStatus === "OPEN" &&
       data.dataStatus === "LIVE" &&
       q.stale === false;
 
-    setText("connection", isLive
-      ? "● LIVE DATA VERIFIED"
-      : "● API CONNECTED · NOT LIVE");
-
+    setText("connection", isLive ? "● LIVE DATA VERIFIED" : "● API CONNECTED · NOT LIVE");
     setText("dashMarket", data.marketStatus || "UNKNOWN");
     setText("dataStatus", data.dataStatus || "UNKNOWN");
     setText("source", data.source || "Unknown");
@@ -324,23 +326,11 @@ async function loadGoldData() {
     setText("quoteTime", date(q.timestamp));
     setText("checkedAt", date(data.checkedAt));
 
-    const midpoint = Number.isFinite(Number(q.bid)) &&
-      Number.isFinite(Number(q.ask))
-      ? (Number(q.bid) + Number(q.ask)) / 2
-      : null;
-
-    setText("mainPrice", midpoint === null
-      ? "--"
-      : number(midpoint));
-
-    setText("priceLabel", isLive
-      ? "LIVE GOLD PRICE"
-      : "LAST RECORDED PRICE · NOT LIVE");
-
-    setText("priceNote", isLive
-      ? "Verified live quote"
-      : "This is the last recorded quote, not a live price.");
-
+    const midpoint = Number.isFinite(Number(q.bid)) && Number.isFinite(Number(q.ask))
+      ? (Number(q.bid) + Number(q.ask)) / 2 : null;
+    setText("mainPrice", midpoint === null ? "--" : number(midpoint));
+    setText("priceLabel", isLive ? "LIVE GOLD PRICE" : "LAST RECORDED PRICE · NOT LIVE");
+    setText("priceNote", isLive ? "Verified live quote" : "This is the last recorded quote, not a live price.");
     setText("connectionMessage", isLive
       ? "Live Gold data verified. Signal checks are enabled."
       : "API responded, but market data is not verified as live. New signals are blocked.");
@@ -350,24 +340,19 @@ async function loadGoldData() {
     setText("h4Age", age(h4.candleAgeMinutes));
     setText("m5Age", age(m5.candleAgeMinutes));
 
-    const signals = data.strategy && data.strategy.signals
-      ? data.strategy.signals
-      : [];
+    const strategy = data.strategy || {};
+    const signals = Array.isArray(strategy.signals) ? strategy.signals : [];
+    renderDiagnostics(strategy, data);
 
     if (isLive) {
       renderSignals(signals);
-      setText("dashSignal", signals.length
-        ? signals[0].direction
-        : "WAITING");
-      setText("signalMessage", data.strategy.message ||
-        "Checking completed M5 candles.");
+      setText("dashSignal", signals.length ? signals[0].direction : "WAITING");
+      setText("signalMessage", strategy.message || "Checking completed M5 candles.");
     } else {
       renderSignals([]);
       setText("dashSignal", "WAITING");
-      setText("signalMessage",
-        "Signals blocked: market closed or data is stale.");
+      setText("signalMessage", "Signals blocked: market closed or data is stale.");
     }
-
   } catch (error) {
     setText("connection", "● CONNECTION ERROR");
     setText("dashMarket", "UNKNOWN");
@@ -378,6 +363,7 @@ async function loadGoldData() {
     setText("connectionMessage", error.message);
     setText("signalMessage", "Signals blocked: API connection error.");
     renderSignals([]);
+    renderDiagnostics(null, null);
   }
 }
 
