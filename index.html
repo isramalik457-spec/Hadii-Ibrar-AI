@@ -42,6 +42,13 @@ footer{text-align:center;color:#81758f;font-size:11px;padding:20px}
 .diag-stat strong{display:block;margin-top:5px;font-size:17px;overflow-wrap:anywhere}
 .reason-list{padding-left:18px;margin:8px 0 0;color:#c5bad5;font-size:12px;line-height:1.7}
 .diag-note{padding:10px;border-radius:8px;background:#191328;color:#aaa1bd;font-size:11px;line-height:1.5}
+.diag-group{margin-top:12px;padding-top:10px;border-top:1px solid #342941}
+.diag-group-title{font-size:11px;font-weight:bold;color:#cbb5ec;margin:0 0 7px}
+.diag-counts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.diag-count{display:flex;justify-content:space-between;gap:8px;background:#171222;border-radius:7px;padding:7px 9px;font-size:11px}
+.diag-count span{color:#bdb1cd}
+.diag-count strong{color:#f5f1ff;font-variant-numeric:tabular-nums}
+
 @media(max-width:520px){body{padding:12px}.grid{gap:8px}.metric{padding:11px}.metric strong{font-size:16px}.diag-stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -215,6 +222,36 @@ function renderSignals(data) {
   });
 }
 
+function appendDiagnosticGroup(card, titleText, entries) {
+  const group = document.createElement("div");
+  group.className = "diag-group";
+
+  const heading = document.createElement("p");
+  heading.className = "diag-group-title";
+  heading.textContent = titleText;
+  group.appendChild(heading);
+
+  const grid = document.createElement("div");
+  grid.className = "diag-counts";
+
+  entries.forEach(([label, value]) => {
+    const row = document.createElement("div");
+    row.className = "diag-count";
+
+    const name = document.createElement("span");
+    name.textContent = label;
+
+    const count = document.createElement("strong");
+    count.textContent = Number.isFinite(Number(value)) ? String(value) : "0";
+
+    row.append(name, count);
+    grid.appendChild(row);
+  });
+
+  group.appendChild(grid);
+  card.appendChild(group);
+}
+
 function renderDiagnostics(strategy, data) {
   const container = document.getElementById("diagStrategies");
   const checksBox = document.getElementById("diagDataChecks");
@@ -275,6 +312,57 @@ function renderDiagnostics(strategy, data) {
       stats.appendChild(box);
     });
     card.appendChild(stats);
+
+    const patterns = item.patterns || {};
+    const confirmations = item.confirmations || {};
+    const risks = item.riskRejections || {};
+
+    const patternLabels = {
+      intraday: [
+        ["Double Top", patterns.doubleTop],
+        ["Triple Top", patterns.tripleTop],
+        ["Double Bottom", patterns.doubleBottom],
+        ["Triple Bottom", patterns.tripleBottom],
+        ["BUY OB", patterns.buyOB],
+        ["SELL OB", patterns.sellOB],
+        ["BUY FVG", patterns.buyFVG],
+        ["SELL FVG", patterns.sellFVG]
+      ],
+      scalping: [
+        ["BUY compact OB", patterns.buyOB],
+        ["SELL compact OB", patterns.sellOB],
+        ["BUY FVG", patterns.buyFVG],
+        ["SELL FVG", patterns.sellFVG]
+      ],
+      liquiditySweep: [
+        ["BUY H4 Low sweep", patterns.buySweep],
+        ["SELL H4 High sweep", patterns.sellSweep]
+      ]
+    };
+
+    appendDiagnosticGroup(card, "PATTERNS / SETUPS FOUND", patternLabels[key] || []);
+
+    if (key !== "liquiditySweep") {
+      appendDiagnosticGroup(card, "M5 CANDLE CONFIRMATIONS", [
+        ["Bullish Engulfing", confirmations.bullishEngulfing],
+        ["Bearish Engulfing", confirmations.bearishEngulfing],
+        ["Bullish Pin Bar", confirmations.bullishPinBar],
+        ["Bearish Pin Bar", confirmations.bearishPinBar],
+        ["Bullish Rejection", confirmations.bullishRejection],
+        ["Bearish Rejection", confirmations.bearishRejection]
+      ]);
+    } else {
+      appendDiagnosticGroup(card, "SWEEP CONFIRMATION", [
+        ["Two-candle close-and-return patterns", (patterns.buySweep || 0) + (patterns.sellSweep || 0)]
+      ]);
+    }
+
+    appendDiagnosticGroup(card, "RISK / TARGET REJECTIONS", [
+      ["SL over $12.00", risks.slOver12],
+      ["RR below 1:2", risks.rrBelow2],
+      ["Invalid SL", risks.invalidSL],
+      ["Missing valid TP1 / TP2", risks.missingTP]
+    ]);
 
     const reasons = Array.isArray(item.reasons) ? item.reasons : [];
     const reasonTitle = document.createElement("p");
