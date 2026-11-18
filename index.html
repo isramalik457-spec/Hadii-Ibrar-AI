@@ -1,9 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#090713">
+<link rel="manifest" href="/manifest.json">
 <title>HADII AI QUANT</title>
 <style>
 *{box-sizing:border-box}
@@ -689,5 +691,17 @@ renderHistory();
 loadGoldData();
 setInterval(loadGoldData, 30000);
 </script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .catch(error => {
+        console.error("Service worker registration failed:", error);
+      });
+  });
+}
+</script>
+
 </body>
 </html>
