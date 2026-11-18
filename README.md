@@ -1,3 +1,4 @@
+
 # Ticker — Live Stocks & ETFs
 
 A fast, mobile-first web app for viewing **live stock and ETF prices** with
@@ -143,15 +144,15 @@ the app keeps working — just without cross-device sync.
 
 ## Project structure
 
-```
+```text
 api/
-  quote.js     # serverless: live quotes + chart history (Yahoo proxy)
-  search.js    # serverless: symbol search (Yahoo proxy)
-  screen.js    # serverless: market screener / discovery (Yahoo proxy)
-  ai.js        # serverless: Google Gemini proxy for the AI search helper
-  account.js   # serverless: username login + watchlist sync (Vercel KV)
+  quote.js
+  search.js
+  screen.js
+  ai.js
+  account.js
 css/styles.css
-js/app.js      # all front-end logic (auth + viewer)
+js/app.js
 index.html
 vercel.json
 manifest.json
@@ -167,8 +168,7 @@ no build step required.
 
 ```bash
 npm i -g vercel
-vercel dev     # runs the static site + serverless functions locally
+vercel dev
 ```
 
-A plain static server (`npx serve .`) will serve the UI but the `/api/*`
-routes won't work without the Vercel dev runtime.
+<!-- Vercel environment refresh -->
