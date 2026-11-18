@@ -48,7 +48,9 @@ footer{text-align:center;color:#81758f;font-size:11px;padding:20px}
 .diag-count{display:flex;justify-content:space-between;gap:8px;background:#171222;border-radius:7px;padding:7px 9px;font-size:11px}
 .diag-count span{color:#bdb1cd}
 .diag-count strong{color:#f5f1ff;font-variant-numeric:tabular-nums}
-
+.history-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.history-button{padding:10px 12px;background:#302344;color:white;border:1px solid #49345e;border-radius:8px}
+.history-card .row{border-bottom:1px solid #342941;padding-bottom:7px}
 @media(max-width:520px){body{padding:12px}.grid{gap:8px}.metric{padding:11px}.metric strong{font-size:16px}.diag-stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -149,8 +151,22 @@ footer{text-align:center;color:#81758f;font-size:11px;padding:20px}
 
 <section id="history" class="hidden">
   <div class="panel">
-    <h2>Trade History</h2>
-    <p class="muted">No saved trade history yet. Signal history and trade performance tracking will be added separately.</p>
+    <h2>Automatic Signal History</h2>
+    <p class="muted">Confirmed signals are saved automatically on this device.</p>
+    <div class="grid">
+      <div class="metric"><small>TOTAL SIGNALS</small><strong id="historyTotal">0</strong></div>
+      <div class="metric"><small>TP1 REACHED</small><strong id="historyTP1" class="green">0</strong></div>
+      <div class="metric"><small>TP2 REACHED</small><strong id="historyTP2" class="green">0</strong></div>
+      <div class="metric"><small>SL BEFORE TP1</small><strong id="historyLosses" class="red">0</strong></div>
+    </div>
+    <div class="row"><span>Win rate (TP1 reached / decided)</span><strong id="historyWinRate">0%</strong></div>
+    <hr>
+    <div id="historyList"><p class="muted">No saved signals yet. Waiting for a confirmed signal.</p></div>
+    <div class="history-actions">
+      <button class="history-button" onclick="exportSignalHistory()">Export CSV</button>
+      <button class="history-button" onclick="clearSignalHistory()">Clear History</button>
+    </div>
+    <p class="muted">History is stored in this Chrome browser on this device. Clearing browser site data can erase it. Outcome checks use completed M5 candle OHLC data; if SL and TP are both crossed in the same candle, the result is marked ambiguous rather than guessing which was hit first. This is tracking, not broker-confirmed execution or P&amp;L.</p>
   </div>
 </section>
 
@@ -162,6 +178,8 @@ footer{text-align:center;color:#81758f;font-size:11px;padding:20px}
 
 <script>
 const API_URL = "/api/gold";
+const HISTORY_KEY = "hadii_ai_quant_signal_history_v1";
+const MAX_HISTORY = 300;
 
 function showTab(id, button) {
   document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
@@ -187,12 +205,245 @@ function date(value) {
   return Number.isNaN(d.getTime()) ? "--" : d.toLocaleString();
 }
 
+/* ---------------- SIGNAL HISTORY ---------------- */
+function getSignalHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    return Array.isArray(saved) ? saved : [];
+  } catch (error) {
+    console.error("Signal history could not be read:", error);
+    return [];
+  }
+}
+function saveSignalHistory(history) {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
+  } catch (error) {
+    console.error("Signal history could not be saved:", error);
+    setText("signalMessage", "Warning: browser storage is full or unavailable; history may not save.");
+  }
+}
+function recordNewSignals(signals) {
+  if (!Array.isArray(signals) || !signals.length) return;
+  const history = getSignalHistory();
+  const known = new Set(history.map(item => item.key));
+  let changed = false;
+
+  signals.forEach(signal => {
+    if (!signal || !["BUY", "SELL"].includes(signal.direction)) return;
+    if (signal.id == null || signal.entry == null || signal.sl == null ||
+        signal.tp1 == null || signal.tp2 == null || !signal.signalTime) return;
+
+    const key = String(signal.id);
+    if (known.has(key)) return;
+
+    history.unshift({
+      key,
+      id: key,
+      direction: signal.direction,
+      strategy: signal.strategy || "UNKNOWN",
+      setup: signal.setup || "Trading setup",
+      entry: Number(signal.entry),
+      sl: Number(signal.sl),
+      tp1: Number(signal.tp1),
+      tp2: Number(signal.tp2),
+      signalTime: signal.signalTime,
+      status: "OPEN",
+      tp1Hit: false,
+      tp2Hit: false,
+      slHit: false,
+      ambiguous: false,
+      lastProcessedCandle: null,
+      savedAt: new Date().toISOString()
+    });
+    known.add(key);
+    changed = true;
+  });
+
+  if (changed) saveSignalHistory(history);
+  renderHistory();
+}
+
+/*
+  Outcome tracking uses completed M5 candle high/low after signal time.
+  If a candle crosses SL and a target in the same candle, order is unknown,
+  so the record is marked AMBIGUOUS instead of inventing a result.
+*/
+function updateSignalOutcomes(m5Candles) {
+  if (!Array.isArray(m5Candles) || !m5Candles.length) return;
+  const candles = m5Candles
+    .filter(c => c && c.isOpen !== true && c.openTime &&
+      [c.high, c.low].every(v => Number.isFinite(Number(v))))
+    .slice()
+    .sort((a, b) => Date.parse(a.openTime) - Date.parse(b.openTime));
+
+  if (!candles.length) return;
+  const history = getSignalHistory();
+  let changed = false;
+
+  history.forEach(item => {
+    if (["TP2 HIT", "SL HIT", "SL HIT AFTER TP1", "AMBIGUOUS"].includes(item.status)) return;
+
+    const signalTime = Date.parse(item.signalTime);
+    if (!Number.isFinite(signalTime)) return;
+
+    const sl = Number(item.sl);
+    const tp1 = Number(item.tp1);
+    const tp2 = Number(item.tp2);
+    if (![sl, tp1, tp2].every(Number.isFinite)) return;
+
+    for (const candle of candles) {
+      const candleTime = Date.parse(candle.openTime);
+      if (!Number.isFinite(candleTime) || candleTime <= signalTime) continue;
+      if (item.lastProcessedCandle &&
+          candleTime <= Date.parse(item.lastProcessedCandle)) continue;
+
+      const high = Number(candle.high);
+      const low = Number(candle.low);
+      const isBuy = item.direction === "BUY";
+      const stopTouched = isBuy ? low <= sl : high >= sl;
+      const tp1Touched = isBuy ? high >= tp1 : low <= tp1;
+      const tp2Touched = isBuy ? high >= tp2 : low <= tp2;
+
+      item.lastProcessedCandle = candle.openTime;
+
+      if (stopTouched && (tp1Touched || tp2Touched)) {
+        item.status = "AMBIGUOUS";
+        item.ambiguous = true;
+        changed = true;
+        break;
+      }
+
+      if (stopTouched) {
+        item.slHit = true;
+        item.status = item.tp1Hit ? "SL HIT AFTER TP1" : "SL HIT";
+        changed = true;
+        break;
+      }
+
+      if (tp2Touched) {
+        item.tp1Hit = true;
+        item.tp2Hit = true;
+        item.status = "TP2 HIT";
+        changed = true;
+        break;
+      }
+
+      if (tp1Touched && !item.tp1Hit) {
+        item.tp1Hit = true;
+        item.status = "TP1 HIT · RUNNING";
+        changed = true;
+      }
+    }
+  });
+
+  if (changed) saveSignalHistory(history);
+  renderHistory();
+}
+function renderHistory() {
+  const history = getSignalHistory();
+  const tp1 = history.filter(x => x.tp1Hit).length;
+  const tp2 = history.filter(x => x.tp2Hit).length;
+  const losses = history.filter(x => x.slHit && !x.tp1Hit).length;
+  const ambiguous = history.filter(x => x.ambiguous).length;
+  const decided = history.filter(x =>
+    ["TP2 HIT", "SL HIT", "SL HIT AFTER TP1"].includes(x.status)
+  ).length;
+  const wins = history.filter(x => x.tp1Hit &&
+    ["TP2 HIT", "SL HIT AFTER TP1"].includes(x.status)
+  ).length;
+
+  setText("historyTotal", history.length);
+  setText("historyTP1", tp1);
+  setText("historyTP2", tp2);
+  setText("historyLosses", losses);
+  setText("historyWinRate", decided ? (wins / decided * 100).toFixed(1) + "%" : "0%");
+
+  const list = document.getElementById("historyList");
+  if (!list) return;
+  list.replaceChildren();
+
+  if (!history.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = "No saved signals yet. Waiting for a confirmed signal.";
+    list.appendChild(empty);
+    return;
+  }
+
+  history.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "signal history-card " + (item.direction === "BUY" ? "buy" : "sell");
+
+    const heading = document.createElement("h3");
+    heading.className = item.direction === "BUY" ? "green" : "red";
+    heading.textContent = item.direction + " · " + item.setup;
+    card.appendChild(heading);
+
+    const details = [
+      ["Strategy", item.strategy],
+      ["Entry", number(item.entry)],
+      ["Stop Loss", number(item.sl)],
+      ["TP1", number(item.tp1)],
+      ["TP2", number(item.tp2)],
+      ["Signal time", date(item.signalTime)],
+      ["Outcome", item.status]
+    ];
+
+    details.forEach(([label, value]) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      const name = document.createElement("span");
+      name.textContent = label;
+      const val = document.createElement("strong");
+      val.textContent = value == null ? "--" : String(value);
+      if (label === "Outcome") {
+        val.className = item.ambiguous ? "yellow" :
+          (item.tp1Hit ? "green" : (item.slHit ? "red" : "yellow"));
+      }
+      row.append(name, val);
+      card.appendChild(row);
+    });
+    list.appendChild(card);
+  });
+}
+function exportSignalHistory() {
+  const history = getSignalHistory();
+  if (!history.length) {
+    alert("There is no signal history to export yet.");
+    return;
+  }
+  const columns = ["direction","strategy","setup","entry","sl","tp1","tp2","signalTime","status","tp1Hit","tp2Hit","slHit","ambiguous"];
+  const quoteCSV = value => '"' + String(value ?? "").replace(/"/g, '""') + '"';
+  const csv = [columns.join(","),
+    ...history.map(item => columns.map(key => quoteCSV(item[key])).join(","))
+  ].join("\r\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "hadii-ai-quant-signal-history.csv";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+function clearSignalHistory() {
+  if (!confirm("Are you sure you want to delete all saved signal history?")) return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+}
+
+/* ---------------- SIGNAL CARDS ---------------- */
 function renderSignals(data) {
   const list = document.getElementById("signalList");
-  list.innerHTML = "";
+  list.replaceChildren();
   const signals = Array.isArray(data) ? data : [];
   if (!signals.length) {
-    list.innerHTML = '<p class="muted">No confirmed signals. Waiting for the next valid setup.</p>';
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = "No confirmed signals. Waiting for the next valid setup.";
+    list.appendChild(empty);
     return;
   }
   signals.forEach(signal => {
@@ -200,7 +451,7 @@ function renderSignals(data) {
     const card = document.createElement("div");
     card.className = "signal " + direction;
     const title = document.createElement("h3");
-    title.textContent = signal.direction + " · " + signal.setup;
+    title.textContent = signal.direction + " · " + (signal.setup || signal.strategy || "Signal");
     title.className = direction === "buy" ? "green" : "red";
     card.appendChild(title);
     const details = [
@@ -222,47 +473,40 @@ function renderSignals(data) {
   });
 }
 
+/* ---------------- STRATEGY DIAGNOSTICS ---------------- */
 function appendDiagnosticGroup(card, titleText, entries) {
   const group = document.createElement("div");
   group.className = "diag-group";
-
   const heading = document.createElement("p");
   heading.className = "diag-group-title";
   heading.textContent = titleText;
   group.appendChild(heading);
-
   const grid = document.createElement("div");
   grid.className = "diag-counts";
 
   entries.forEach(([label, value]) => {
     const row = document.createElement("div");
     row.className = "diag-count";
-
     const name = document.createElement("span");
     name.textContent = label;
-
     const count = document.createElement("strong");
     count.textContent = Number.isFinite(Number(value)) ? String(value) : "0";
-
     row.append(name, count);
     grid.appendChild(row);
   });
-
   group.appendChild(grid);
   card.appendChild(group);
 }
-
 function renderDiagnostics(strategy, data) {
   const container = document.getElementById("diagStrategies");
   const checksBox = document.getElementById("diagDataChecks");
-  container.innerHTML = "";
+  container.replaceChildren();
 
   if (!strategy || !strategy.diagnostics) {
     setText("diagStatus", "Diagnostics are not available in this API response.");
     checksBox.textContent = "No diagnostic data received.";
     return;
   }
-
   setText("diagStatus", strategy.message || "Latest strategy scan completed.");
   const checks = strategy.dataChecks || {};
   checksBox.textContent =
@@ -276,14 +520,11 @@ function renderDiagnostics(strategy, data) {
     scalping: "SCALPING",
     liquiditySweep: "LIQUIDITY SWEEP"
   };
-
   Object.entries(labels).forEach(([key, label]) => {
     const item = strategy.diagnostics[key];
     if (!item) return;
-
     const card = document.createElement("div");
     card.className = "diag-card";
-
     const heading = document.createElement("div");
     heading.className = "diag-title";
     const title = document.createElement("h3");
@@ -297,10 +538,8 @@ function renderDiagnostics(strategy, data) {
     const stats = document.createElement("div");
     stats.className = "diag-stats";
     [
-      ["Checks", item.checks],
-      ["Setups found", item.setupsFound],
-      ["Signals", item.signalsCreated],
-      ["Rejected", item.rejectedCount]
+      ["Checks", item.checks], ["Setups found", item.setupsFound],
+      ["Signals", item.signalsCreated], ["Rejected", item.rejectedCount]
     ].forEach(([name, value]) => {
       const box = document.createElement("div");
       box.className = "diag-stat";
@@ -316,32 +555,22 @@ function renderDiagnostics(strategy, data) {
     const patterns = item.patterns || {};
     const confirmations = item.confirmations || {};
     const risks = item.riskRejections || {};
-
     const patternLabels = {
       intraday: [
-        ["Double Top", patterns.doubleTop],
-        ["Triple Top", patterns.tripleTop],
-        ["Double Bottom", patterns.doubleBottom],
-        ["Triple Bottom", patterns.tripleBottom],
-        ["BUY OB", patterns.buyOB],
-        ["SELL OB", patterns.sellOB],
-        ["BUY FVG", patterns.buyFVG],
-        ["SELL FVG", patterns.sellFVG]
+        ["Double Top", patterns.doubleTop], ["Triple Top", patterns.tripleTop],
+        ["Double Bottom", patterns.doubleBottom], ["Triple Bottom", patterns.tripleBottom],
+        ["BUY OB", patterns.buyOB], ["SELL OB", patterns.sellOB],
+        ["BUY FVG", patterns.buyFVG], ["SELL FVG", patterns.sellFVG]
       ],
       scalping: [
-        ["BUY compact OB", patterns.buyOB],
-        ["SELL compact OB", patterns.sellOB],
-        ["BUY FVG", patterns.buyFVG],
-        ["SELL FVG", patterns.sellFVG]
+        ["BUY compact OB", patterns.buyOB], ["SELL compact OB", patterns.sellOB],
+        ["BUY FVG", patterns.buyFVG], ["SELL FVG", patterns.sellFVG]
       ],
       liquiditySweep: [
-        ["BUY H4 Low sweep", patterns.buySweep],
-        ["SELL H4 High sweep", patterns.sellSweep]
+        ["BUY H4 Low sweep", patterns.buySweep], ["SELL H4 High sweep", patterns.sellSweep]
       ]
     };
-
     appendDiagnosticGroup(card, "PATTERNS / SETUPS FOUND", patternLabels[key] || []);
-
     if (key !== "liquiditySweep") {
       appendDiagnosticGroup(card, "M5 CANDLE CONFIRMATIONS", [
         ["Bullish Engulfing", confirmations.bullishEngulfing],
@@ -356,37 +585,35 @@ function renderDiagnostics(strategy, data) {
         ["Two-candle close-and-return patterns", (patterns.buySweep || 0) + (patterns.sellSweep || 0)]
       ]);
     }
-
     appendDiagnosticGroup(card, "RISK / TARGET REJECTIONS", [
       ["SL over $12.00", risks.slOver12],
       ["RR below 1:2", risks.rrBelow2],
       ["Invalid SL", risks.invalidSL],
       ["Missing valid TP1 / TP2", risks.missingTP]
     ]);
-
     const reasons = Array.isArray(item.reasons) ? item.reasons : [];
     const reasonTitle = document.createElement("p");
     reasonTitle.className = "muted";
     reasonTitle.textContent = reasons.length ? "Latest checks / rejection reasons:" : "No rejection reasons reported.";
     card.appendChild(reasonTitle);
-
     if (reasons.length) {
-      const list = document.createElement("ul");
-      list.className = "reason-list";
+      const reasonList = document.createElement("ul");
+      reasonList.className = "reason-list";
       reasons.forEach(reason => {
         const li = document.createElement("li");
         li.textContent = reason;
-        list.appendChild(li);
+        reasonList.appendChild(li);
       });
-      card.appendChild(list);
+      card.appendChild(reasonList);
     }
     container.appendChild(card);
   });
 }
 
+/* ---------------- LIVE API ---------------- */
 async function loadGoldData() {
   try {
-    const response = await fetch(API_URL, { cache: "no-store" });
+    const response = await fetch(API_URL, {cache:"no-store"});
     if (!response.ok) throw new Error("API returned HTTP " + response.status);
     const data = await response.json();
     if (!data.success) throw new Error(data.message || "Gold API error");
@@ -399,7 +626,8 @@ async function loadGoldData() {
       data.canGenerateSignals === true &&
       data.marketStatus === "OPEN" &&
       data.dataStatus === "LIVE" &&
-      q.stale === false;
+      q.stale === false &&
+      data.spreadFilter?.allowed !== false;
 
     setText("connection", isLive ? "● LIVE DATA VERIFIED" : "● API CONNECTED · NOT LIVE");
     setText("dashMarket", data.marketStatus || "UNKNOWN");
@@ -420,8 +648,8 @@ async function loadGoldData() {
     setText("priceLabel", isLive ? "LIVE GOLD PRICE" : "LAST RECORDED PRICE · NOT LIVE");
     setText("priceNote", isLive ? "Verified live quote" : "This is the last recorded quote, not a live price.");
     setText("connectionMessage", isLive
-      ? "Live Gold data verified. Signal checks are enabled."
-      : "API responded, but market data is not verified as live. New signals are blocked.");
+      ? "Live Gold data verified. Spread filter passed. Signal checks are enabled."
+      : "API responded, but market data is not verified as live or spread filter did not pass. New signals are blocked.");
 
     setText("h4Count", (h4.candles || []).length);
     setText("m5Count", (m5.candles || []).length);
@@ -433,13 +661,15 @@ async function loadGoldData() {
     renderDiagnostics(strategy, data);
 
     if (isLive) {
+      recordNewSignals(signals);
+      updateSignalOutcomes(m5.candles || []);
       renderSignals(signals);
       setText("dashSignal", signals.length ? signals[0].direction : "WAITING");
       setText("signalMessage", strategy.message || "Checking completed M5 candles.");
     } else {
       renderSignals([]);
       setText("dashSignal", "WAITING");
-      setText("signalMessage", "Signals blocked: market closed or data is stale.");
+      setText("signalMessage", data.signalBlockReason || "Signals blocked: market closed, spread too high or data is stale.");
     }
   } catch (error) {
     setText("connection", "● CONNECTION ERROR");
@@ -455,9 +685,9 @@ async function loadGoldData() {
   }
 }
 
+renderHistory();
 loadGoldData();
 setInterval(loadGoldData, 30000);
 </script>
 </body>
-                                              </html>
-  
+</html>
